@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo original de Alba Lab Conecta: un sol de "alba" saliendo sobre el horizonte -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <path
+        android:fillColor="#8C7CFF"
+        android:pathData="M32,72 A28,28 0 0,1 88,72 Z" />
+    <path
+        android:pathData="M60,36 L60,24 M78,40.8 L84,30.4 M42,40.8 L36,30.4 M91.2,54 L101.6,48 M28.8,54 L18.4,48"
+        android:strokeWidth="5"
+        android:strokeColor="#BB9AF7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M14,72 L106,72"
+        android:strokeWidth="5"
+        android:strokeColor="#E8E6F7"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M30,84 L90,84 M44,95 L76,95"
+        android:strokeWidth="4"
+        android:strokeAlpha="0.6"
+        android:strokeColor="#8C7CFF"
+        android:strokeLineCap="round" />
+</vector>

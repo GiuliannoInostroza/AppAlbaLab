@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.AppAlbaLab" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Tema oscuro con fondo negro para evitar un destello blanco al abrir la app -->
+    <style name="Theme.AppAlbaLab" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
 </resources>
