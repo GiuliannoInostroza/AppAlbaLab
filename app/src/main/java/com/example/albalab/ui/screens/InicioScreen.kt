@@ -3,6 +3,8 @@ package com.example.albalab.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,13 +19,14 @@ import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -31,37 +34,124 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.albalab.R
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.albalab.navigation.Screen
+import com.example.albalab.ui.components.BarraInferior
+import com.example.albalab.ui.components.BarraSuperior
 import com.example.albalab.ui.components.TarjetaInfo
+import com.example.albalab.ui.utils.obtenerWindowSizeClass
+import com.example.albalab.viewmodel.ColaboracionViewModel
+import com.example.albalab.viewmodel.MainViewModel
+import com.example.albalab.viewmodel.UsuarioViewModel
 import com.example.albalab.ui.theme.AppAlbaLabTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InicioScreen() {
+fun InicioScreen(
+    mainViewModel: MainViewModel = viewModel(),
+    usuarioViewModel: UsuarioViewModel = viewModel(),
+    colaboracionViewModel: ColaboracionViewModel = viewModel()
+) {
+    val usuario by usuarioViewModel.usuarioActual.collectAsState()
+    val windowSizeClass = obtenerWindowSizeClass()
+
+    // Prepara el formulario con el nombre del usuario y abre "Colaborar"
+    fun irAColaborar() {
+        colaboracionViewModel.nuevoFormulario(nombre = usuario?.nombre ?: "")
+        mainViewModel.navigateTo(Screen.Colaborar, popUpTo = Screen.Inicio)
+    }
+
     Scaffold(
-        // Barra superior con el nombre de la app
-        topBar = {
-            TopAppBar(
-                title = { Text("Alba Lab Conecta") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
+        topBar = { BarraSuperior(titulo = "Alba Lab Conecta") },
+        bottomBar = {
+            BarraInferior(rutaActual = Screen.Inicio.route) { destino ->
+                mainViewModel.navigateTo(destino, popUpTo = Screen.Inicio)
+            }
         }
     ) { innerPadding ->
-        // Contenido con scroll vertical para que quepa en cualquier pantalla
+        // Guía 9: según el ancho de la pantalla se muestra un diseño u otro
+        when (windowSizeClass.widthSizeClass) {
+            WindowWidthSizeClass.Compact -> InicioCompacta(
+                modifier = Modifier.padding(innerPadding),
+                nombre = usuario?.nombre ?: "",
+                onColaborar = { irAColaborar() }
+            )
+            else -> InicioExpandida(
+                modifier = Modifier.padding(innerPadding),
+                nombre = usuario?.nombre ?: "",
+                onColaborar = { irAColaborar() }
+            )
+        }
+    }
+}
+
+// Teléfono en vertical: todo en una columna
+@Composable
+fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Saludo(nombre)
+        SeccionProposito()
+        BotonColaborar(onColaborar)
+        SeccionModalidades()
+        SeccionImpacto()
+    }
+}
+
+// Tablet o teléfono girado: dos columnas lado a lado
+@Composable
+fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit) {
+    Row(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
         Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            Saludo(nombre)
             SeccionProposito()
-            SeccionModalidades()
+            BotonColaborar(onColaborar)
             SeccionImpacto()
         }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 16.dp)
+        ) {
+            SeccionModalidades()
+        }
+    }
+}
+
+@Composable
+fun Saludo(nombre: String) {
+    Text(
+        text = "Hola, $nombre",
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
+fun BotonColaborar(onColaborar: () -> Unit) {
+    Button(
+        onClick = onColaborar,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+    ) {
+        Text("Quiero colaborar")
     }
 }
 
@@ -160,10 +250,18 @@ fun SeccionImpacto() {
     }
 }
 
-@Preview(name = "Inicio", widthDp = 360, heightDp = 800)
+@Preview(name = "Compacta", widthDp = 360, heightDp = 800)
 @Composable
-fun PreviewInicio() {
+fun PreviewCompacta() {
     AppAlbaLabTheme {
-        InicioScreen()
+        InicioCompacta(modifier = Modifier, nombre = "Camila", onColaborar = {})
+    }
+}
+
+@Preview(name = "Expandida", widthDp = 900, heightDp = 600)
+@Composable
+fun PreviewExpandida() {
+    AppAlbaLabTheme {
+        InicioExpandida(modifier = Modifier, nombre = "Camila", onColaborar = {})
     }
 }
