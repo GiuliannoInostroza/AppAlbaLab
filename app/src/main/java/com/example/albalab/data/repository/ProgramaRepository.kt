@@ -12,49 +12,56 @@ class ProgramaRepository {
                 nombre = "Preparación para el empleo",
                 categoria = "Programa",
                 descripcion = "Talleres donde jóvenes y adultos con discapacidad múltiple desarrollan rutinas de trabajo, comunicación y autonomía.",
-                destinoAporte = "Materiales de taller y monitores de apoyo."
+                destinoAporte = "Materiales de taller y monitores de apoyo.",
+                tipoColaboracion = "Donación"
             ),
             Programa(
                 id = 2,
                 nombre = "Escuela Especial Jan Van Dijk",
                 categoria = "Programa",
                 descripcion = "Educación especializada para estudiantes con discapacidad múltiple, con foco en comunicación y vida independiente.",
-                destinoAporte = "Recursos pedagógicos y adaptaciones de aula."
+                destinoAporte = "Recursos pedagógicos y adaptaciones de aula.",
+                tipoColaboracion = "Donación"
             ),
             Programa(
                 id = 3,
                 nombre = "Red Sociolaboral Alba Lab",
                 categoria = "Programa",
                 descripcion = "Conecta a los participantes con empresas y acompaña su adaptación al puesto de trabajo.",
-                destinoAporte = "Seguimiento laboral y apoyo a los equipos de las empresas."
+                destinoAporte = "Seguimiento laboral y apoyo a los equipos de las empresas.",
+                tipoColaboracion = "Alianza empresarial"
             ),
             Programa(
                 id = 4,
                 nombre = "Productos de los talleres",
                 categoria = "Producto",
                 descripcion = "Artículos elaborados por los participantes de los talleres de producción.",
-                destinoAporte = "Insumos y continuidad de los talleres."
+                destinoAporte = "Insumos y continuidad de los talleres.",
+                tipoColaboracion = "Compra de productos"
             ),
             Programa(
                 id = 5,
                 nombre = "Regalos corporativos",
                 categoria = "Producto",
                 descripcion = "Packs para empresas en fechas especiales, preparados en los talleres.",
-                destinoAporte = "Insumos y apoyo a los participantes."
+                destinoAporte = "Insumos y apoyo a los participantes.",
+                tipoColaboracion = "Compra de productos"
             ),
             Programa(
                 id = 6,
                 nombre = "Voluntariado corporativo",
                 categoria = "Servicio RSE",
                 descripcion = "Jornadas en que equipos de una empresa comparten actividades con los estudiantes.",
-                destinoAporte = "Actividades recreativas y de integración."
+                destinoAporte = "Actividades recreativas y de integración.",
+                tipoColaboracion = "Voluntariado"
             ),
             Programa(
                 id = 7,
                 nombre = "Capacitación en inclusión",
                 categoria = "Servicio RSE",
                 descripcion = "Charlas para empresas sobre cómo incluir a personas con discapacidad en sus equipos.",
-                destinoAporte = "Financia los programas de la organización."
+                destinoAporte = "Financia los programas de la organización.",
+                tipoColaboracion = "Capacitación"
             )
         )
     }

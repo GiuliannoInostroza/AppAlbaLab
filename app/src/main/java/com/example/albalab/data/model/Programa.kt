@@ -6,5 +6,6 @@ data class Programa(
     val nombre: String,           // Nombre visible
     val categoria: String,        // "Programa", "Producto" o "Servicio RSE"
     val descripcion: String,      // Qué es y a quién beneficia
-    val destinoAporte: String     // En qué se usa el aporte del colaborador
+    val destinoAporte: String,    // En qué se usa el aporte del colaborador
+    val tipoColaboracion: String  // Tipo que se marca al pulsar "Quiero colaborar"
 )
