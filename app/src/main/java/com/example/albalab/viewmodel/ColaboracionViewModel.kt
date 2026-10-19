@@ -57,7 +57,7 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
             id = colaboracion.id,
             nombre = colaboracion.nombre,
             tipo = colaboracion.tipo,
-            personas = colaboracion.personas.toString(),
+            cantidad = colaboracion.cantidad.toString(),
             fecha = colaboracion.fecha,
             mensaje = colaboracion.mensaje,
             recurrente = colaboracion.recurrente,
@@ -70,14 +70,45 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
         _formulario.update { it.copy(nombre = valor, errores = it.errores.copy(nombre = null)) }
     }
 
+    // Al cambiar el tipo se borra la cantidad, porque cada tipo pide un dato distinto
     fun onTipoChange(valor: String) {
-        _formulario.update { it.copy(tipo = valor, errores = it.errores.copy(tipo = null)) }
+        _formulario.update {
+            it.copy(tipo = valor, cantidad = "", errores = it.errores.copy(tipo = null, cantidad = null))
+        }
     }
 
     // Solo acepta dígitos, igual que el formulario del profe
-    fun onPersonasChange(valor: String) {
+    fun onCantidadChange(valor: String) {
         if (valor.all { it.isDigit() }) {
-            _formulario.update { it.copy(personas = valor, errores = it.errores.copy(personas = null)) }
+            _formulario.update { it.copy(cantidad = valor, errores = it.errores.copy(cantidad = null)) }
+        }
+    }
+
+    // El campo numérico cambia según el tipo de colaboración
+    fun etiquetaCantidad(tipo: String): String {
+        return when (tipo) {
+            "Donación" -> "Monto a donar (CLP)"
+            "Compra de productos" -> "Cantidad de productos"
+            else -> "Personas que participan"
+        }
+    }
+
+    // El texto del switch también se adapta al tipo
+    fun etiquetaRecurrente(tipo: String): String {
+        return when (tipo) {
+            "Donación" -> "Donación mensual"
+            "Compra de productos" -> "Pedido mensual"
+            "" -> "Colaboración mensual"
+            else -> "Participar todos los meses"
+        }
+    }
+
+    // Texto que se muestra en "Mis registros", por ejemplo "$20000 CLP" o "3 persona(s)"
+    fun describirCantidad(tipo: String, cantidad: Int): String {
+        return when (tipo) {
+            "Donación" -> "\$$cantidad CLP"
+            "Compra de productos" -> "$cantidad producto(s)"
+            else -> "$cantidad persona(s)"
         }
     }
 
@@ -100,8 +131,20 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
     // Reglas del formulario. La pantalla no valida nada: solo muestra estos errores
     fun validarFormulario(): Boolean {
         val datos = _formulario.value
-        val personas = datos.personas.toIntOrNull()
+        val cantidad = datos.cantidad.toIntOrNull()
         val unDia = 24 * 60 * 60 * 1000L
+
+        // La regla del número depende del tipo elegido
+        var errorCantidad: String? = null
+        if (datos.tipo == "Donación") {
+            if (cantidad == null || cantidad < 1000 || cantidad > 10000000) {
+                errorCantidad = "Ingresa un monto entre 1.000 y 10.000.000 CLP"
+            }
+        } else if (datos.tipo.isNotBlank()) {
+            if (cantidad == null || cantidad < 1 || cantidad > 500) {
+                errorCantidad = "Ingresa un número entre 1 y 500"
+            }
+        }
 
         var errorFecha: String? = null
         if (datos.fecha == null) {
@@ -113,7 +156,7 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
         val errores = ColaboracionErrores(
             nombre = if (datos.nombre.trim().length < 3) "Escribe al menos 3 letras" else null,
             tipo = if (datos.tipo.isBlank()) "Elige cómo quieres colaborar" else null,
-            personas = if (personas == null || personas < 1 || personas > 500) "Ingresa un número entre 1 y 500" else null,
+            cantidad = errorCantidad,
             fecha = errorFecha,
             mensaje = if (datos.mensaje.trim().length < 10) "Cuéntanos un poco más (mínimo 10 caracteres)" else null,
             aceptaContacto = if (!datos.aceptaContacto) "Debes aceptar que te contactemos" else null
@@ -133,7 +176,7 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
                     usuarioCorreo = correoUsuario,
                     nombre = datos.nombre.trim(),
                     tipo = datos.tipo,
-                    personas = datos.personas.toInt(),
+                    cantidad = datos.cantidad.toInt(),
                     fecha = datos.fecha ?: System.currentTimeMillis(),
                     mensaje = datos.mensaje.trim(),
                     recurrente = datos.recurrente,

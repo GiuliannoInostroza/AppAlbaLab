@@ -5,7 +5,7 @@ data class ColaboracionUiState(
     val id: Int = 0,                    // 0 = nueva; otro valor = se está editando
     val nombre: String = "",
     val tipo: String = "",
-    val personas: String = "",          // Se escribe como texto y se valida como número
+    val cantidad: String = "",          // Se escribe como texto y se valida como número
     val fecha: Long? = null,
     val mensaje: String = "",
     val recurrente: Boolean = false,
@@ -16,7 +16,7 @@ data class ColaboracionUiState(
 data class ColaboracionErrores(
     val nombre: String? = null,
     val tipo: String? = null,
-    val personas: String? = null,
+    val cantidad: String? = null,
     val fecha: String? = null,
     val mensaje: String? = null,
     val aceptaContacto: String? = null

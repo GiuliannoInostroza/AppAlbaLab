@@ -10,7 +10,7 @@ data class Colaboracion(
     val usuarioCorreo: String,      // A qué usuario pertenece
     val nombre: String,             // Persona o empresa que colabora
     val tipo: String,               // Donación, Voluntariado, etc.
-    val personas: Int,              // Personas que participan
+    val cantidad: Int,              // Monto, productos o personas, según el tipo
     val fecha: Long,                // Fecha de contacto preferida (milisegundos)
     val mensaje: String,
     val recurrente: Boolean,        // Aporte mensual

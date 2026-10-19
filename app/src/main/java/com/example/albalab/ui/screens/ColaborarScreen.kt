@@ -30,7 +30,9 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -201,15 +203,21 @@ fun ColaborarScreen(
                     }
                 }
 
-                // Int
-                CampoTexto(
-                    valor = formulario.personas,
-                    onValorChange = colaboracionViewModel::onPersonasChange,
-                    etiqueta = "Personas que participan",
-                    icono = Icons.Filled.Groups,
-                    error = errores.personas,
-                    teclado = KeyboardType.Number
-                )
+                // Int: aparece solo después de elegir el tipo, y su etiqueta depende del tipo
+                AnimatedVisibility(visible = formulario.tipo.isNotBlank()) {
+                    CampoTexto(
+                        valor = formulario.cantidad,
+                        onValorChange = colaboracionViewModel::onCantidadChange,
+                        etiqueta = colaboracionViewModel.etiquetaCantidad(formulario.tipo),
+                        icono = when (formulario.tipo) {
+                            "Donación" -> Icons.Filled.Payments
+                            "Compra de productos" -> Icons.Filled.ShoppingCart
+                            else -> Icons.Filled.Groups
+                        },
+                        error = errores.cantidad,
+                        teclado = KeyboardType.Number
+                    )
+                }
 
                 // Date: campo de solo lectura que abre el DatePicker
                 OutlinedTextField(
@@ -243,7 +251,7 @@ fun ColaborarScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Aporte recurrente")
+                        Text(colaboracionViewModel.etiquetaRecurrente(formulario.tipo))
                         Text(
                             text = "Repetir la colaboración cada mes",
                             style = MaterialTheme.typography.bodySmall,

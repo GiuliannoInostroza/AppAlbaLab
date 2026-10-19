@@ -96,6 +96,7 @@ fun MisColaboracionesScreen(
                     lista.forEach { colaboracion ->
                         TarjetaColaboracion(
                             colaboracion = colaboracion,
+                            detalle = colaboracionViewModel.describirCantidad(colaboracion.tipo, colaboracion.cantidad),
                             onEditar = {
                                 colaboracionViewModel.editar(colaboracion)
                                 mainViewModel.navigateTo(Screen.Colaborar, popUpTo = Screen.Inicio)
@@ -134,6 +135,7 @@ fun MisColaboracionesScreen(
 @Composable
 private fun TarjetaColaboracion(
     colaboracion: Colaboracion,
+    detalle: String,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -157,13 +159,13 @@ private fun TarjetaColaboracion(
             }
             Text(text = colaboracion.nombre, style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = "Contacto: ${formatearFecha(colaboracion.fecha)} - ${colaboracion.personas} persona(s)",
+                text = "Contacto: ${formatearFecha(colaboracion.fecha)} - $detalle",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (colaboracion.recurrente) {
                 Text(
-                    text = "Aporte mensual",
+                    text = "Colaboración mensual",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
