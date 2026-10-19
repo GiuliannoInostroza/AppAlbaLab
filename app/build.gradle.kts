@@ -66,6 +66,9 @@ dependencies {
     // Imagen de perfil desde una URI (guía 13)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // Recordatorios que llegan aunque la app esté cerrada
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
+
     // Verificación de identidad: biometría y prueba de vida
     implementation("androidx.biometric:biometric:1.1.0")
     implementation("androidx.camera:camera-camera2:1.4.2")

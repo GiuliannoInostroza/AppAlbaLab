@@ -9,6 +9,7 @@ import com.example.albalab.data.model.Colaboracion
 import com.example.albalab.data.model.ColaboracionErrores
 import com.example.albalab.data.model.ColaboracionUiState
 import com.example.albalab.data.repository.ColaboracionRepository
+import com.example.albalab.ui.utils.formatearFecha
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -184,16 +185,35 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
                 )
             )
             if (esNueva) {
-                // Notificación local: recurso nativo extra (bonus track)
+                // Notificación local al instante (bonus track)
                 Notificaciones.mostrar(
                     getApplication(),
                     "Colaboración registrada",
                     "Gracias. El equipo de Alba Lab te contactará pronto."
                 )
+                programarRecordatorio(datos.tipo, datos.fecha ?: System.currentTimeMillis())
             }
             _formulario.value = ColaboracionUiState(nombre = datos.nombre)
             _guardadoCorrectamente.value = true
         }
+    }
+
+    // Recordatorio del día de contacto. La fecha del DatePicker es la medianoche (UTC) del día elegido:
+    // si ya pasó, la fecha es hoy y el recordatorio llega en 20 segundos;
+    // si no, llega justo a esa hora (la noche anterior en Chile) avisando que es mañana
+    private fun programarRecordatorio(tipo: String, fecha: Long) {
+        val retraso = fecha - System.currentTimeMillis()
+        val esHoy = retraso <= 0
+        Notificaciones.programarRecordatorio(
+            getApplication(),
+            titulo = "Recordatorio: $tipo",
+            texto = if (esHoy) {
+                "Hoy el equipo de Alba Lab te contactará por tu colaboración. Revisa tu correo y tu teléfono."
+            } else {
+                "Mañana (${formatearFecha(fecha)}) el equipo de Alba Lab te contactará por tu colaboración."
+            },
+            retrasoMillis = if (esHoy) 20_000L else retraso
+        )
     }
 
     fun ocultarMensaje() {
