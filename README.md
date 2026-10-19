@@ -1,4 +1,4 @@
-# Alba Lab Conecta - AppAlbaLab_Grupo1
+# Alba Lab Conecta - AppAlbaLab
 
 Aplicación Android para el caso **CORPALIV / Alba Lab** (DSY1105 - Desarrollo de Aplicaciones Móviles, Evaluación Parcial 2).
 
