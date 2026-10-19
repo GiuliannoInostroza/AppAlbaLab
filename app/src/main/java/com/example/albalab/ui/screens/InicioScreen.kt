@@ -55,8 +55,9 @@ fun InicioScreen(
     val windowSizeClass = obtenerWindowSizeClass()
 
     // Prepara el formulario con el nombre del usuario y abre "Colaborar"
-    fun irAColaborar() {
-        colaboracionViewModel.nuevoFormulario(nombre = usuario?.nombre ?: "")
+    // Si viene un tipo (desde una tarjeta de modalidad) el formulario ya lo trae marcado
+    fun irAColaborar(tipo: String = "") {
+        colaboracionViewModel.nuevoFormulario(tipo = tipo, nombre = usuario?.nombre ?: "")
         mainViewModel.navigateTo(Screen.Colaborar, popUpTo = Screen.Inicio)
     }
 
@@ -73,12 +74,14 @@ fun InicioScreen(
             WindowWidthSizeClass.Compact -> InicioCompacta(
                 modifier = Modifier.padding(innerPadding),
                 nombre = usuario?.nombre ?: "",
-                onColaborar = { irAColaborar() }
+                onColaborar = { irAColaborar() },
+                onModalidad = { tipo -> irAColaborar(tipo) }
             )
             else -> InicioExpandida(
                 modifier = Modifier.padding(innerPadding),
                 nombre = usuario?.nombre ?: "",
-                onColaborar = { irAColaborar() }
+                onColaborar = { irAColaborar() },
+                onModalidad = { tipo -> irAColaborar(tipo) }
             )
         }
     }
@@ -86,7 +89,7 @@ fun InicioScreen(
 
 // Teléfono en vertical: todo en una columna
 @Composable
-fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit) {
+fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -97,14 +100,14 @@ fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit) 
         Saludo(nombre)
         SeccionProposito()
         BotonColaborar(onColaborar)
-        SeccionModalidades()
+        SeccionModalidades(onModalidad)
         SeccionImpacto()
     }
 }
 
 // Tablet o teléfono girado: dos columnas lado a lado
 @Composable
-fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit) {
+fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit) {
     Row(
         modifier = modifier
             .fillMaxSize()
@@ -129,7 +132,7 @@ fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit)
                 .verticalScroll(rememberScrollState())
                 .padding(vertical = 16.dp)
         ) {
-            SeccionModalidades()
+            SeccionModalidades(onModalidad)
         }
     }
 }
@@ -184,36 +187,46 @@ fun SeccionProposito() {
 
 // Las 5 formas de colaborar con la organización
 @Composable
-fun SeccionModalidades() {
+fun SeccionModalidades(onModalidad: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Cómo puedes colaborar",
             style = MaterialTheme.typography.titleLarge
         )
+        Text(
+            text = "Toca una opción para registrarla",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         TarjetaInfo(
             icono = Icons.Filled.Favorite,
             titulo = "Donación",
-            texto = "Tu aporte financia materiales de taller y apoyo pedagógico."
+            texto = "Tu aporte financia materiales de taller y apoyo pedagógico.",
+            onClick = { onModalidad("Donación") }
         )
         TarjetaInfo(
             icono = Icons.Filled.VolunteerActivism,
             titulo = "Voluntariado",
-            texto = "Comparte una jornada de actividades con los estudiantes."
+            texto = "Comparte una jornada de actividades con los estudiantes.",
+            onClick = { onModalidad("Voluntariado") }
         )
         TarjetaInfo(
             icono = Icons.Filled.Handshake,
             titulo = "Alianza empresarial",
-            texto = "Abre puestos de trabajo inclusivos en tu empresa."
+            texto = "Abre puestos de trabajo inclusivos en tu empresa.",
+            onClick = { onModalidad("Alianza empresarial") }
         )
         TarjetaInfo(
             icono = Icons.Filled.Storefront,
             titulo = "Compra de productos",
-            texto = "Elige productos hechos en los talleres de producción."
+            texto = "Elige productos hechos en los talleres de producción.",
+            onClick = { onModalidad("Compra de productos") }
         )
         TarjetaInfo(
             icono = Icons.Filled.School,
             titulo = "Capacitación",
-            texto = "Charlas para que tu equipo aprenda a incluir."
+            texto = "Charlas para que tu equipo aprenda a incluir.",
+            onClick = { onModalidad("Capacitación") }
         )
     }
 }
@@ -254,7 +267,7 @@ fun SeccionImpacto() {
 @Composable
 fun PreviewCompacta() {
     AppAlbaLabTheme {
-        InicioCompacta(modifier = Modifier, nombre = "Camila", onColaborar = {})
+        InicioCompacta(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {})
     }
 }
 
@@ -262,6 +275,6 @@ fun PreviewCompacta() {
 @Composable
 fun PreviewExpandida() {
     AppAlbaLabTheme {
-        InicioExpandida(modifier = Modifier, nombre = "Camila", onColaborar = {})
+        InicioExpandida(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {})
     }
 }
