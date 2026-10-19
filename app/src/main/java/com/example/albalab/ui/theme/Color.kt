@@ -2,11 +2,12 @@ package com.example.albalab.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta oscura inspirada en Tokyo Night, con fondo negro OLED
-val NegroOled = Color(0xFF000000)          // Fondo de toda la app
-val Superficie = Color(0xFF0B0B12)         // Barras y superficies base
-val SuperficieAlta = Color(0xFF14141F)     // Tarjetas y campos
-val SuperficieMasAlta = Color(0xFF1C1C2B)  // Tarjetas destacadas
+// Paleta oscura inspirada en Tokyo Night
+val Fondo = Color(0xFF12121A)              // Fondo de toda la app: casi negro, más suave que el negro puro
+val TextoOscuro = Color(0xFF0A0A12)        // Texto sobre botones y elementos violeta
+val Superficie = Color(0xFF191A24)         // Barras y superficies base
+val SuperficieAlta = Color(0xFF20212D)     // Tarjetas y campos
+val SuperficieMasAlta = Color(0xFF292A3A)  // Tarjetas destacadas
 
 val Violeta = Color(0xFF8C7CFF)            // Color principal (ultravioleta azulado)
 val VioletaOscuro = Color(0xFF2A2357)      // Fondo de elementos seleccionados
