@@ -1,6 +1,6 @@
 # Alba Lab Conecta - AppAlbaLab
 
-Aplicación Android para el caso **CORPALIV / Alba Lab** (DSY1105 - Desarrollo de Aplicaciones Móviles, Evaluación Parcial 2).
+Aplicación Android para el caso **CORPALIV / Alba Lab** (Evaluación Parcial 2).
 
 CORPALIV promueve la inclusión social y laboral de personas con discapacidad múltiple. Quien quiere colaborar encuentra la información repartida en muchos canales. Esta app reúne el propósito de la organización, sus programas y el destino de los aportes, y termina en un formulario para concretar la colaboración (donación, voluntariado, alianza, compra o capacitación).
 
@@ -8,7 +8,7 @@ CORPALIV promueve la inclusión social y laboral de personas con discapacidad m�
 
 - Giulianno Inostroza
 - Pascal Pacheco
-- naperezg
+- Nicolás Pérez
 
 ## Funcionalidades
 
