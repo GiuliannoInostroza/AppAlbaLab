@@ -21,7 +21,9 @@ import com.example.albalab.ui.screens.ProgramasScreen
 import com.example.albalab.ui.screens.PruebaVidaScreen
 import com.example.albalab.ui.screens.RegistroScreen
 import com.example.albalab.ui.screens.VerificacionScreen
+import com.example.albalab.ui.screens.IndicadoresScreen
 import com.example.albalab.viewmodel.ColaboracionViewModel
+import com.example.albalab.viewmodel.IndicadorViewModel
 import com.example.albalab.viewmodel.MainViewModel
 import com.example.albalab.viewmodel.ProgramasViewModel
 import com.example.albalab.viewmodel.UsuarioViewModel
@@ -94,6 +96,11 @@ fun AppNavigation() {
         }
         composable(Screen.Perfil.route) {
             PerfilScreen(mainViewModel, usuarioViewModel, colaboracionViewModel)
+        }
+        composable(Screen.Indicadores.route) {
+            // API externa: su ViewModel se crea aquí porque solo lo usa esta pantalla
+            val indicadorViewModel: IndicadorViewModel = viewModel()
+            IndicadoresScreen(viewModel = indicadorViewModel, onVolver = { mainViewModel.navigateBack() })
         }
     }
 }

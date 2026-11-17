@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.School
@@ -75,13 +76,15 @@ fun InicioScreen(
                 modifier = Modifier.padding(innerPadding),
                 nombre = usuario?.nombre ?: "",
                 onColaborar = { irAColaborar() },
-                onModalidad = { tipo -> irAColaborar(tipo) }
+                onModalidad = { tipo -> irAColaborar(tipo) },
+                onIndicadores = { mainViewModel.navigateTo(Screen.Indicadores) }
             )
             else -> InicioExpandida(
                 modifier = Modifier.padding(innerPadding),
                 nombre = usuario?.nombre ?: "",
                 onColaborar = { irAColaborar() },
-                onModalidad = { tipo -> irAColaborar(tipo) }
+                onModalidad = { tipo -> irAColaborar(tipo) },
+                onIndicadores = { mainViewModel.navigateTo(Screen.Indicadores) }
             )
         }
     }
@@ -89,7 +92,7 @@ fun InicioScreen(
 
 // Teléfono en vertical: todo en una columna
 @Composable
-fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit) {
+fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit, onIndicadores: () -> Unit) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -100,6 +103,7 @@ fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit, 
         Saludo(nombre)
         SeccionProposito()
         BotonColaborar(onColaborar)
+        TarjetaIndicadores(onIndicadores)
         SeccionModalidades(onModalidad)
         SeccionImpacto()
     }
@@ -107,7 +111,7 @@ fun InicioCompacta(modifier: Modifier, nombre: String, onColaborar: () -> Unit, 
 
 // Tablet o teléfono girado: dos columnas lado a lado
 @Composable
-fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit) {
+fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit, onModalidad: (String) -> Unit, onIndicadores: () -> Unit) {
     Row(
         modifier = modifier
             .fillMaxSize()
@@ -124,6 +128,7 @@ fun InicioExpandida(modifier: Modifier, nombre: String, onColaborar: () -> Unit,
             Saludo(nombre)
             SeccionProposito()
             BotonColaborar(onColaborar)
+            TarjetaIndicadores(onIndicadores)
             SeccionImpacto()
         }
         Column(
@@ -183,6 +188,17 @@ fun SeccionProposito() {
             textAlign = TextAlign.Center
         )
     }
+}
+
+// Acceso a la pantalla de la API externa
+@Composable
+fun TarjetaIndicadores(onIndicadores: () -> Unit) {
+    TarjetaInfo(
+        icono = Icons.Filled.AttachMoney,
+        titulo = "Indicadores del día",
+        texto = "UF, dólar y UTM para calcular tu aporte.",
+        onClick = onIndicadores
+    )
 }
 
 // Las 5 formas de colaborar con la organización
@@ -267,7 +283,7 @@ fun SeccionImpacto() {
 @Composable
 fun PreviewCompacta() {
     AppAlbaLabTheme {
-        InicioCompacta(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {})
+        InicioCompacta(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {}, onIndicadores = {})
     }
 }
 
@@ -275,6 +291,6 @@ fun PreviewCompacta() {
 @Composable
 fun PreviewExpandida() {
     AppAlbaLabTheme {
-        InicioExpandida(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {})
+        InicioExpandida(modifier = Modifier, nombre = "Camila", onColaborar = {}, onModalidad = {}, onIndicadores = {})
     }
 }

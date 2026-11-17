@@ -12,4 +12,5 @@ sealed class Screen(val route: String) {
     data object Colaborar : Screen("colaborar")
     data object MisColaboraciones : Screen("mis_colaboraciones")
     data object Perfil : Screen("perfil")
+    data object Indicadores : Screen("indicadores")
 }
