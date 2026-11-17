@@ -107,6 +107,12 @@ fun RegistroScreen(
                         modifier = Modifier.padding(start = 12.dp)
                     )
                 }
+                AnimatedVisibility(visible = estado.errores.general != null) {
+                    Text(
+                        text = estado.errores.general ?: "",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
                 Button(
                     onClick = {
                         usuarioViewModel.registrar {

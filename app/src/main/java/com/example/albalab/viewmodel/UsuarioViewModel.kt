@@ -11,6 +11,7 @@ import com.example.albalab.data.model.LoginUiState
 import com.example.albalab.data.model.RegistroErrores
 import com.example.albalab.data.model.RegistroUiState
 import com.example.albalab.data.model.Usuario
+import com.example.albalab.data.remote.RetrofitMicroservicios
 import com.example.albalab.data.repository.UsuarioRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,13 +20,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// Lógica de login, registro, sesión y foto de perfil
-class UsuarioViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repositorio = UsuarioRepository(
+// Lógica de login, registro, sesión y foto de perfil.
+// El repositorio y la sesión se reciben por el constructor: la app usa los reales
+// y las pruebas unitarias pasan unos simulados (MockK)
+class UsuarioViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repositorio: UsuarioRepository = UsuarioRepository(
         AppDatabase.obtenerBaseDeDatos(application).usuarioDao()
-    )
-    private val sesion = SesionDataStore(application)
+    ),
+    private val sesion: SesionDataStore = SesionDataStore(application)
+) : AndroidViewModel(application) {
 
     private val _login = MutableStateFlow(LoginUiState())
     val login: StateFlow<LoginUiState> = _login
@@ -43,12 +47,13 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
         cargarSesion()
     }
 
-    // Al abrir la app revisa si había una sesión guardada en DataStore
+    // Al abrir la app revisa si había una sesión guardada en DataStore (correo y token)
     private fun cargarSesion() {
         viewModelScope.launch {
             delay(600)
             val correo = sesion.correoSesion.first()
             if (correo != null) {
+                RetrofitMicroservicios.token = sesion.tokenSesion.first() ?: ""
                 _usuarioActual.value = repositorio.buscar(correo)
             }
             _cargando.value = false
@@ -77,14 +82,19 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
     fun iniciarSesion(onExito: () -> Unit) {
         if (!validarLogin()) return
         viewModelScope.launch {
-            val usuario = repositorio.validarCredenciales(_login.value.correo.trim(), _login.value.clave)
-            if (usuario == null) {
-                _login.update { it.copy(errores = it.errores.copy(general = "Correo o contraseña incorrectos")) }
-            } else {
-                sesion.guardarSesion(usuario.correo)
-                _usuarioActual.value = usuario
-                _login.value = LoginUiState()
-                onExito()
+            try {
+                // El auth-service revisa la clave y entrega el token JWT
+                val usuario = repositorio.iniciarSesion(_login.value.correo.trim(), _login.value.clave)
+                if (usuario == null) {
+                    _login.update { it.copy(errores = it.errores.copy(general = "Correo o contraseña incorrectos")) }
+                } else {
+                    sesion.guardarSesion(usuario.correo, RetrofitMicroservicios.token)
+                    _usuarioActual.value = usuario
+                    _login.value = LoginUiState()
+                    onExito()
+                }
+            } catch (e: Exception) {
+                _login.update { it.copy(errores = it.errores.copy(general = RetrofitMicroservicios.mensajeDeError(e))) }
             }
         }
     }
@@ -128,14 +138,20 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
         if (!validarRegistro()) return
         val estado = _registro.value
         viewModelScope.launch {
-            val creado = repositorio.registrar(estado.nombre.trim(), estado.correo.trim(), estado.clave)
-            if (!creado) {
-                _registro.update { it.copy(errores = it.errores.copy(correo = "Ya existe una cuenta con este correo")) }
-            } else {
-                sesion.guardarSesion(estado.correo.trim())
-                _usuarioActual.value = repositorio.buscar(estado.correo.trim())
-                _registro.value = RegistroUiState()
-                onExito()
+            try {
+                val creado = repositorio.registrar(estado.nombre.trim(), estado.correo.trim(), estado.clave)
+                if (!creado) {
+                    _registro.update { it.copy(errores = it.errores.copy(correo = "Ya existe una cuenta con este correo")) }
+                } else {
+                    // Recién creada la cuenta, se inicia sesión para obtener el token
+                    val usuario = repositorio.iniciarSesion(estado.correo.trim(), estado.clave)
+                    sesion.guardarSesion(estado.correo.trim(), RetrofitMicroservicios.token)
+                    _usuarioActual.value = usuario
+                    _registro.value = RegistroUiState()
+                    onExito()
+                }
+            } catch (e: Exception) {
+                _registro.update { it.copy(errores = it.errores.copy(general = RetrofitMicroservicios.mensajeDeError(e))) }
             }
         }
     }
@@ -158,6 +174,7 @@ class UsuarioViewModel(application: Application) : AndroidViewModel(application)
     fun cerrarSesion(onListo: () -> Unit) {
         viewModelScope.launch {
             sesion.cerrarSesion()
+            RetrofitMicroservicios.token = ""
             _usuarioActual.value = null
             onListo()
         }

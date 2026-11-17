@@ -28,5 +28,6 @@ data class RegistroErrores(
     val correo: String? = null,
     val clave: String? = null,
     val confirmarClave: String? = null,
-    val aceptaTerminos: String? = null
+    val aceptaTerminos: String? = null,
+    val general: String? = null     // Ej: no se pudo conectar con el servidor
 )

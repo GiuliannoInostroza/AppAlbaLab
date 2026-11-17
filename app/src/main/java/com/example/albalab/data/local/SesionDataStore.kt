@@ -11,11 +11,12 @@ private val Context.dataStore by preferencesDataStore(
     name = "sesion"
 )
 
-// Guarda el correo del usuario que inició sesión (mismo patrón que EstadoDataStore de la guía 12)
+// Guarda el correo y el token JWT del usuario que inició sesión (mismo patrón que EstadoDataStore de la guía 12)
 class SesionDataStore(private val context: Context) {
 
     companion object {
         private val CORREO_SESION = stringPreferencesKey("correo_sesion")
+        private val TOKEN_SESION = stringPreferencesKey("token_sesion")
     }
 
     val correoSesion: Flow<String?> =
@@ -23,15 +24,22 @@ class SesionDataStore(private val context: Context) {
             preferencias[CORREO_SESION]
         }
 
-    suspend fun guardarSesion(correo: String) {
+    val tokenSesion: Flow<String?> =
+        context.dataStore.data.map { preferencias ->
+            preferencias[TOKEN_SESION]
+        }
+
+    suspend fun guardarSesion(correo: String, token: String) {
         context.dataStore.edit { preferencias ->
             preferencias[CORREO_SESION] = correo
+            preferencias[TOKEN_SESION] = token
         }
     }
 
     suspend fun cerrarSesion() {
         context.dataStore.edit { preferencias ->
             preferencias.remove(CORREO_SESION)
+            preferencias.remove(TOKEN_SESION)
         }
     }
 }

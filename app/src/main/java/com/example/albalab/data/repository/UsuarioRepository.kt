@@ -1,15 +1,25 @@
 package com.example.albalab.data.repository
 
 import com.example.albalab.data.local.UsuarioDao
+import com.example.albalab.data.model.Credenciales
 import com.example.albalab.data.model.Usuario
+import com.example.albalab.data.remote.MicroserviciosService
+import com.example.albalab.data.remote.RetrofitMicroservicios
 import java.security.MessageDigest
 
-// Obtiene y guarda usuarios. Aquí se cifra la clave antes de guardarla
-class UsuarioRepository(private val usuarioDao: UsuarioDao) {
+// La cuenta vive en el auth-service; Room guarda una copia local (nombre, foto y hash de la clave)
+open class UsuarioRepository(
+    private val usuarioDao: UsuarioDao,
+    private val api: MicroserviciosService = RetrofitMicroservicios.api
+) {
 
-    // Devuelve false si el correo ya está registrado
-    suspend fun registrar(nombre: String, correo: String, clave: String): Boolean {
+    // Devuelve false si el correo ya está registrado (en el servidor o en el teléfono)
+    open suspend fun registrar(nombre: String, correo: String, clave: String): Boolean {
         if (usuarioDao.buscarPorCorreo(correo) != null) {
+            return false
+        }
+        val respuesta = api.registrar(Credenciales(correo, clave))
+        if (respuesta.message != "Usuario creado exitosamente!") {
             return false
         }
         usuarioDao.insertar(
@@ -22,17 +32,33 @@ class UsuarioRepository(private val usuarioDao: UsuarioDao) {
         return true
     }
 
-    // Devuelve el usuario si el correo existe y el hash de la clave coincide
-    suspend fun validarCredenciales(correo: String, clave: String): Usuario? {
-        val usuario = usuarioDao.buscarPorCorreo(correo) ?: return null
-        return if (usuario.claveCifrada == cifrarClave(clave)) usuario else null
-    }
-
-    suspend fun buscar(correo: String): Usuario? {
+    // El auth-service valida la clave y entrega el token JWT.
+    // Si el usuario no está en el teléfono, se crea su copia local
+    open suspend fun iniciarSesion(correo: String, clave: String): Usuario? {
+        val respuesta = api.login(Credenciales(correo, clave))
+        if (respuesta.status != "ok") {
+            return null
+        }
+        RetrofitMicroservicios.token = respuesta.token
+        val local = usuarioDao.buscarPorCorreo(correo)
+        if (local != null) {
+            return local
+        }
+        usuarioDao.insertar(
+            Usuario(
+                nombre = correo.substringBefore("@"),
+                correo = correo,
+                claveCifrada = cifrarClave(clave)
+            )
+        )
         return usuarioDao.buscarPorCorreo(correo)
     }
 
-    suspend fun actualizarFoto(usuario: Usuario, fotoUri: String) {
+    open suspend fun buscar(correo: String): Usuario? {
+        return usuarioDao.buscarPorCorreo(correo)
+    }
+
+    open suspend fun actualizarFoto(usuario: Usuario, fotoUri: String) {
         usuarioDao.actualizar(usuario.copy(fotoUri = fotoUri))
     }
 
