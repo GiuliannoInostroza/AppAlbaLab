@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permiso para consumir la API externa y los microservicios (guía 14) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Recursos nativos que usa la app -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -19,6 +22,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AppAlbaLab">
 
         <!-- Proveedor para compartir con la cámara la URI donde se guarda la foto (guía 13) -->
