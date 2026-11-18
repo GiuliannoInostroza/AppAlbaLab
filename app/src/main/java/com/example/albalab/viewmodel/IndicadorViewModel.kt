@@ -20,6 +20,10 @@ open class IndicadorViewModel(
     protected val _error = MutableStateFlow<String?>(null)
     open val error: StateFlow<String?> = _error
 
+    // Aviso cuando se usa la fuente temporal (mindicador.cl caído)
+    protected val _aviso = MutableStateFlow<String?>(null)
+    open val aviso: StateFlow<String?> = _aviso
+
     init {
         fetchIndicadores()
     }
@@ -27,11 +31,22 @@ open class IndicadorViewModel(
     open fun fetchIndicadores() {
         viewModelScope.launch {
             try {
+                // Primero siempre mindicador.cl
                 _indicadores.value = repository.getIndicadores()
+                _aviso.value = null
                 _error.value = null
             } catch (e: Exception) {
                 println("Error al obtener datos: ${e.localizedMessage}")
-                _error.value = "No se pudieron cargar los indicadores. Revisa tu conexión a internet."
+                // Solo si mindicador.cl está caído se usa la fuente temporal
+                try {
+                    _indicadores.value = repository.getIndicadoresRespaldo()
+                    _aviso.value = "mindicador.cl no responde. Se está usando una fuente temporal " +
+                        "(open.er-api.com) que solo tiene el dólar y el euro, sin UF ni UTM."
+                    _error.value = null
+                } catch (e2: Exception) {
+                    println("Error al obtener datos de respaldo: ${e2.localizedMessage}")
+                    _error.value = "No se pudieron cargar los indicadores. Revisa tu conexión a internet."
+                }
             }
         }
     }

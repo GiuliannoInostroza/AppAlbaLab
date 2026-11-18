@@ -27,6 +27,7 @@ class IndicadoresScreenTest {
         val fakeViewModel = object : IndicadorViewModel() {
             override val indicadores = MutableStateFlow(fakeIndicadores)
             override val error = MutableStateFlow<String?>(null)
+            override val aviso = MutableStateFlow<String?>(null)
         }
         // Renderizamos la pantalla con el ViewModel falso
         composeRule.setContent {

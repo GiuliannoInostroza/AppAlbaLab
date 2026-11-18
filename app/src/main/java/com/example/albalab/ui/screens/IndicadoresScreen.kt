@@ -29,6 +29,7 @@ import java.util.Locale
 fun IndicadoresScreen(viewModel: IndicadorViewModel, onVolver: () -> Unit = {}) {
     val indicadores = viewModel.indicadores.collectAsState().value
     val error = viewModel.error.collectAsState().value
+    val aviso = viewModel.aviso.collectAsState().value
 
     Scaffold(
         topBar = { BarraSuperior(titulo = "Indicadores del día", onVolver = onVolver) }
@@ -55,11 +56,20 @@ fun IndicadoresScreen(viewModel: IndicadorViewModel, onVolver: () -> Unit = {}) 
                         .padding(16.dp)
                 ) {
                     item {
-                        Text(
-                            text = "Las empresas suelen expresar sus donaciones en UF. Fuente: mindicador.cl",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (aviso != null) {
+                            // Fuente temporal: se avisa que faltan la UF y la UTM
+                            Text(
+                                text = aviso,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else {
+                            Text(
+                                text = "Las empresas suelen expresar sus donaciones en UF. Fuente: mindicador.cl",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     items(indicadores) { indicador ->
                         Card(

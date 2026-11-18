@@ -6,7 +6,9 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.string.shouldContain
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,12 +50,39 @@ class IndicadorViewModelTest : StringSpec({
             val viewModel = IndicadorViewModel(mockRepo)
             viewModel.indicadores.value shouldContainExactly fakeIndicadores
             viewModel.error.value.shouldBeNull()
+            viewModel.aviso.value.shouldBeNull()
         }
     }
 
-    "si no hay internet debe mostrar un mensaje de error" {
+    "si mindicador.cl está caído debe usar la fuente temporal y avisarlo" {
+        val respaldo = listOf(
+            Indicador("dolar", "Dólar", "2026-11-17", 995.95),
+            Indicador("euro", "Euro", "2026-11-17", 1096.16)
+        )
+        val mockRepo = mockk<IndicadorRepository>()
+        coEvery { mockRepo.getIndicadores() } throws IOException("mindicador caído")
+        coEvery { mockRepo.getIndicadoresRespaldo() } returns respaldo
+        runTest {
+            val viewModel = IndicadorViewModel(mockRepo)
+            viewModel.indicadores.value shouldContainExactly respaldo
+            viewModel.aviso.value!! shouldContain "sin UF ni UTM"
+            viewModel.error.value.shouldBeNull()
+        }
+    }
+
+    "si mindicador.cl responde no debe pedir la fuente temporal" {
+        val mockRepo = mockk<IndicadorRepository>()
+        coEvery { mockRepo.getIndicadores() } returns fakeIndicadores
+        runTest {
+            IndicadorViewModel(mockRepo)
+            coVerify(exactly = 0) { mockRepo.getIndicadoresRespaldo() }
+        }
+    }
+
+    "si no hay internet (ni mindicador ni la fuente temporal) debe mostrar un mensaje de error" {
         val mockRepo = mockk<IndicadorRepository>()
         coEvery { mockRepo.getIndicadores() } throws IOException("sin internet")
+        coEvery { mockRepo.getIndicadoresRespaldo() } throws IOException("sin internet")
         runTest {
             val viewModel = IndicadorViewModel(mockRepo)
             viewModel.error.value.shouldNotBeNull()
