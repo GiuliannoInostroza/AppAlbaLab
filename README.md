@@ -25,7 +25,7 @@ La app se conecta a nuestros microservicios en Spring Boot (repositorio [AlbaLab
 - **Catálogo de programas y productos** que llega desde el contenidos-service, con filtro dinámico mientras se escribe.
 - **Formulario "Quiero colaborar"** con texto, número, fecha, lista desplegable, switch y checkbox, todos validados.
 - **CRUD de colaboraciones en el vinculacion-service**: crear (POST), listar (GET), editar (PUT) y eliminar (DELETE). El servidor asigna el estado RECIBIDA y la fecha de creación.
-- **Indicadores del día (API externa)**: UF, dólar y UTM desde mindicador.cl, consumidos con Retrofit.
+- **Indicadores del día (API externa)**: UF, dólar y UTM desde mindicador.cl, consumidos con Retrofit. Si mindicador.cl está caído, la app usa una fuente temporal (open.er-api.com) con el dólar y el euro en pesos, y muestra un aviso de que faltan la UF y la UTM.
 - **Perfil** con foto desde la galería o la cámara.
 - **Notificación local** al registrar una colaboración y recordatorio con WorkManager.
 - **Pruebas unitarias** (Kotest + MockK + JUnit 5) y **prueba de interfaz** (Compose UI Test).
@@ -33,11 +33,16 @@ La app se conecta a nuestros microservicios en Spring Boot (repositorio [AlbaLab
 
 ## 4. Endpoints utilizados
 
-### API externa (Retrofit, `data/remote/ApiService.kt` y `RetrofitInstance.kt`)
+### API externa (Retrofit, `data/remote/ApiService.kt`, `ApiRespaldoService.kt` y `RetrofitInstance.kt`)
 
 | Método | URL | Uso en la app |
 |---|---|---|
-| GET | `https://mindicador.cl/api` | Pantalla "Indicadores del día" (UF, dólar y UTM) |
+| GET | `https://mindicador.cl/api` | Pantalla "Indicadores del día" (UF, dólar y UTM). Siempre se pide primero |
+| GET | `https://open.er-api.com/v6/latest/USD` | Respaldo: solo si mindicador.cl no responde (dólar y euro, sin UF ni UTM) |
+
+Así se ve la pantalla cuando mindicador.cl está caído:
+
+![Indicadores con la fuente temporal](docs/capturas/indicadores_respaldo.png)
 
 ### Microservicios propios (Retrofit, `data/remote/MicroserviciosService.kt` y `RetrofitMicroservicios.kt`)
 
@@ -68,11 +73,11 @@ Todas las llamadas pasan por el **api-gateway** en `http://10.0.2.2:9090/` (10.0
 
 | Archivo de prueba | Qué prueba |
 |---|---|
-| `repository/IndicadorRepositoryTest` | Lectura de la API externa con un `ApiService` simulado |
+| `repository/IndicadorRepositoryTest` | Lectura de la API externa y cálculo del dólar y el euro de la fuente temporal |
 | `repository/ProgramaRepositoryTest` | Programas del contenidos-service enviando el token |
 | `repository/ColaboracionRepositoryTest` | POST, PUT, GET y DELETE del vinculacion-service |
 | `repository/UsuarioRepositoryTest` | Registro, login con token y clave cifrada |
-| `viewmodel/IndicadorViewModelTest` | Carga de indicadores (subclase falsa como en la guía y con MockK) |
+| `viewmodel/IndicadorViewModelTest` | Carga de indicadores, uso de la fuente temporal solo si mindicador.cl falla, y error sin internet |
 | `viewmodel/ProgramasViewModelTest` | Carga, filtro y errores de conexión o token vencido |
 | `viewmodel/ColaboracionViewModelTest` | Validaciones del formulario y CRUD |
 | `viewmodel/UsuarioViewModelTest` | Sesión, login, registro, verificación y cierre de sesión |
@@ -80,7 +85,7 @@ Todas las llamadas pasan por el **api-gateway** en `http://10.0.2.2:9090/` (10.0
 | `viewmodel/PruebaVidaViewModelTest` | Gestos de la prueba de vida |
 | `androidTest/ui/IndicadoresScreenTest` | Que los indicadores aparezcan en pantalla |
 
-Resultado: 56 pruebas unitarias aprobadas, con 98 % de las líneas de los paquetes `viewmodel` y `data/repository` cubiertas.
+Resultado: 59 pruebas unitarias aprobadas, con 98 % de las líneas de los paquetes `viewmodel` y `data/repository` cubiertas.
 
 ## 6. APK firmado y llave
 
