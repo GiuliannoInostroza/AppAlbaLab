@@ -1,12 +1,8 @@
 package com.example.albalab.data.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-// Tabla "colaboraciones": cada registro de interés que hace un usuario
-@Entity(tableName = "colaboraciones")
+// Solicitud de colaboración. Ahora se guarda en el vinculacion-service (persistencia remota)
 data class Colaboracion(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val id: Int = 0,
     val usuarioCorreo: String,      // A qué usuario pertenece
     val nombre: String,             // Persona o empresa que colabora
     val tipo: String,               // Donación, Voluntariado, etc.
@@ -14,5 +10,6 @@ data class Colaboracion(
     val fecha: Long,                // Fecha de contacto preferida (milisegundos)
     val mensaje: String,
     val recurrente: Boolean,        // Aporte mensual
-    val aceptaContacto: Boolean
+    val aceptaContacto: Boolean,
+    val estado: String = ""         // Lo asigna el servidor: parte en RECIBIDA
 )

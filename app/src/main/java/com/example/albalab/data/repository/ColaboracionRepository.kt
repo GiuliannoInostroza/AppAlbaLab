@@ -1,26 +1,28 @@
 package com.example.albalab.data.repository
 
-import com.example.albalab.data.local.ColaboracionDao
 import com.example.albalab.data.model.Colaboracion
-import kotlinx.coroutines.flow.Flow
+import com.example.albalab.data.remote.MicroserviciosService
+import com.example.albalab.data.remote.RetrofitMicroservicios
 
-// Obtiene y guarda las colaboraciones usando el DAO de Room
-class ColaboracionRepository(private val colaboracionDao: ColaboracionDao) {
+// CRUD de colaboraciones contra el vinculacion-service
+open class ColaboracionRepository(
+    private val api: MicroserviciosService = RetrofitMicroservicios.api
+) {
 
-    fun obtenerPorUsuario(correo: String): Flow<List<Colaboracion>> {
-        return colaboracionDao.obtenerPorUsuario(correo)
+    open suspend fun obtenerPorUsuario(correo: String): List<Colaboracion> {
+        return api.getSolicitudes(RetrofitMicroservicios.bearer(), correo)
     }
 
-    // Si el id es 0 es nueva (insertar); si no, ya existe (actualizar)
-    suspend fun guardar(colaboracion: Colaboracion) {
+    // Si el id es 0 es nueva (POST); si no, ya existe (PUT)
+    open suspend fun guardar(colaboracion: Colaboracion) {
         if (colaboracion.id == 0) {
-            colaboracionDao.insertar(colaboracion)
+            api.crearSolicitud(RetrofitMicroservicios.bearer(), colaboracion)
         } else {
-            colaboracionDao.actualizar(colaboracion)
+            api.actualizarSolicitud(RetrofitMicroservicios.bearer(), colaboracion.id, colaboracion)
         }
     }
 
-    suspend fun eliminar(colaboracion: Colaboracion) {
-        colaboracionDao.eliminar(colaboracion)
+    open suspend fun eliminar(colaboracion: Colaboracion) {
+        api.eliminarSolicitud(RetrofitMicroservicios.bearer(), colaboracion.id)
     }
 }

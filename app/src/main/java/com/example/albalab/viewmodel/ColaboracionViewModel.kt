@@ -4,10 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.albalab.data.Notificaciones
-import com.example.albalab.data.local.AppDatabase
 import com.example.albalab.data.model.Colaboracion
 import com.example.albalab.data.model.ColaboracionErrores
 import com.example.albalab.data.model.ColaboracionUiState
+import com.example.albalab.data.remote.RetrofitMicroservicios
 import com.example.albalab.data.repository.ColaboracionRepository
 import com.example.albalab.ui.utils.formatearFecha
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,12 +15,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// Formulario "Quiero colaborar" y CRUD de colaboraciones
-class ColaboracionViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repositorio = ColaboracionRepository(
-        AppDatabase.obtenerBaseDeDatos(application).colaboracionDao()
-    )
+// Formulario "Quiero colaborar" y CRUD de colaboraciones contra el vinculacion-service.
+// El repositorio se recibe por el constructor para poder simularlo en las pruebas
+class ColaboracionViewModel @JvmOverloads constructor(
+    application: Application,
+    private val repositorio: ColaboracionRepository = ColaboracionRepository()
+) : AndroidViewModel(application) {
 
     val tipos = listOf("Donación", "Voluntariado", "Alianza empresarial", "Compra de productos", "Capacitación")
 
@@ -33,15 +33,18 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
     private val _guardadoCorrectamente = MutableStateFlow(false)
     val guardadoCorrectamente: StateFlow<Boolean> = _guardadoCorrectamente
 
-    private var correoCargado: String? = null
+    // Mensaje cuando falla la conexión con el microservicio (null = sin error)
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
 
-    // Escucha la tabla de Room: cada cambio actualiza la lista automáticamente
+    // Pide al microservicio las colaboraciones del usuario (GET)
     fun cargarColaboraciones(correo: String) {
-        if (correoCargado == correo) return
-        correoCargado = correo
         viewModelScope.launch {
-            repositorio.obtenerPorUsuario(correo).collect { lista ->
-                _colaboraciones.value = lista
+            try {
+                _colaboraciones.value = repositorio.obtenerPorUsuario(correo)
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = RetrofitMicroservicios.mensajeDeError(e)
             }
         }
     }
@@ -171,30 +174,37 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
         val datos = _formulario.value
         val esNueva = datos.id == 0
         viewModelScope.launch {
-            repositorio.guardar(
-                Colaboracion(
-                    id = datos.id,
-                    usuarioCorreo = correoUsuario,
-                    nombre = datos.nombre.trim(),
-                    tipo = datos.tipo,
-                    cantidad = datos.cantidad.toInt(),
-                    fecha = datos.fecha ?: System.currentTimeMillis(),
-                    mensaje = datos.mensaje.trim(),
-                    recurrente = datos.recurrente,
-                    aceptaContacto = datos.aceptaContacto
+            try {
+                // POST si es nueva, PUT si se está editando
+                repositorio.guardar(
+                    Colaboracion(
+                        id = datos.id,
+                        usuarioCorreo = correoUsuario,
+                        nombre = datos.nombre.trim(),
+                        tipo = datos.tipo,
+                        cantidad = datos.cantidad.toInt(),
+                        fecha = datos.fecha ?: System.currentTimeMillis(),
+                        mensaje = datos.mensaje.trim(),
+                        recurrente = datos.recurrente,
+                        aceptaContacto = datos.aceptaContacto
+                    )
                 )
-            )
-            if (esNueva) {
-                // Notificación local al instante (bonus track)
-                Notificaciones.mostrar(
-                    getApplication(),
-                    "Colaboración registrada",
-                    "Gracias. El equipo de Alba Lab te contactará pronto."
-                )
-                programarRecordatorio(datos.tipo, datos.fecha ?: System.currentTimeMillis())
+                if (esNueva) {
+                    // Notificación local al instante (bonus track)
+                    Notificaciones.mostrar(
+                        getApplication(),
+                        "Colaboración registrada",
+                        "Gracias. El equipo de Alba Lab te contactará pronto."
+                    )
+                    programarRecordatorio(datos.tipo, datos.fecha ?: System.currentTimeMillis())
+                }
+                _formulario.value = ColaboracionUiState(nombre = datos.nombre)
+                _guardadoCorrectamente.value = true
+                _error.value = null
+                cargarColaboraciones(correoUsuario)
+            } catch (e: Exception) {
+                _error.value = RetrofitMicroservicios.mensajeDeError(e)
             }
-            _formulario.value = ColaboracionUiState(nombre = datos.nombre)
-            _guardadoCorrectamente.value = true
         }
     }
 
@@ -220,9 +230,15 @@ class ColaboracionViewModel(application: Application) : AndroidViewModel(applica
         _guardadoCorrectamente.value = false
     }
 
+    // DELETE en el microservicio y luego se vuelve a pedir la lista
     fun eliminar(colaboracion: Colaboracion) {
         viewModelScope.launch {
-            repositorio.eliminar(colaboracion)
+            try {
+                repositorio.eliminar(colaboracion)
+                cargarColaboraciones(colaboracion.usuarioCorreo)
+            } catch (e: Exception) {
+                _error.value = RetrofitMicroservicios.mensajeDeError(e)
+            }
         }
     }
 }
