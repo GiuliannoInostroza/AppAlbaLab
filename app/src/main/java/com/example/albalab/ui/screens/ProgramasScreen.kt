@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +66,12 @@ fun ProgramasScreen(
     val busqueda by programasViewModel.busqueda.collectAsState()
     val programas by programasViewModel.programasFiltrados.collectAsState()
     val usuario by usuarioViewModel.usuarioActual.collectAsState()
+    val error by programasViewModel.error.collectAsState()
+
+    // Al abrir la pantalla se piden los programas al contenidos-service
+    LaunchedEffect(Unit) {
+        programasViewModel.cargarProgramas()
+    }
 
     Scaffold(
         topBar = { BarraSuperior(titulo = "Programas y productos") },
@@ -86,6 +93,9 @@ fun ProgramasScreen(
                 modifier = Modifier.widthIn(max = 640.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
                 // Cada letra que se escribe llama al ViewModel, que filtra la lista
                 OutlinedTextField(
                     value = busqueda,
