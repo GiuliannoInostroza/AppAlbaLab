@@ -88,6 +88,7 @@ fun ColaborarScreen(
     val context = LocalContext.current
     val formulario by colaboracionViewModel.formulario.collectAsState()
     val guardado by colaboracionViewModel.guardadoCorrectamente.collectAsState()
+    val error by colaboracionViewModel.error.collectAsState()
     val usuario by usuarioViewModel.usuarioActual.collectAsState()
     val errores = formulario.errores
     val editando = formulario.id != 0
@@ -298,6 +299,9 @@ fun ColaborarScreen(
                     Text(if (editando) "Guardar cambios" else "Enviar registro")
                 }
                 MensajeExito(visible = guardado, texto = "Registro guardado. Puedes verlo en Mis registros.")
+                error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
                 if (editando) {
                     TextButton(
                         onClick = { colaboracionViewModel.nuevoFormulario(nombre = usuario?.nombre ?: "") },

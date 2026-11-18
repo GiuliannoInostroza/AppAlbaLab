@@ -42,7 +42,7 @@ import com.example.albalab.viewmodel.ColaboracionViewModel
 import com.example.albalab.viewmodel.MainViewModel
 import com.example.albalab.viewmodel.UsuarioViewModel
 
-// Lista de colaboraciones guardadas en Room: leer, editar y eliminar (CRUD)
+// Lista de colaboraciones guardadas en el vinculacion-service: leer, editar y eliminar (CRUD)
 @Composable
 fun MisColaboracionesScreen(
     mainViewModel: MainViewModel,
@@ -51,6 +51,7 @@ fun MisColaboracionesScreen(
 ) {
     val usuario by usuarioViewModel.usuarioActual.collectAsState()
     val lista by colaboracionViewModel.colaboraciones.collectAsState()
+    val error by colaboracionViewModel.error.collectAsState()
     var aEliminar by remember { mutableStateOf<Colaboracion?>(null) }
 
     LaunchedEffect(usuario) {
@@ -73,6 +74,9 @@ fun MisColaboracionesScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
                 if (lista.isEmpty()) {
                     Icon(
                         imageVector = Icons.Filled.Inbox,
@@ -158,6 +162,11 @@ private fun TarjetaColaboracion(
                 }
             }
             Text(text = colaboracion.nombre, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = "Estado: ${colaboracion.estado}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
             Text(
                 text = "Contacto: ${formatearFecha(colaboracion.fecha)} - $detalle",
                 style = MaterialTheme.typography.bodyMedium,
