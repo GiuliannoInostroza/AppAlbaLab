@@ -19,8 +19,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK de publicación con la llave albalab.jks (Build > Generate Signed App Bundle / APK)
+    signingConfigs {
+        create("release") {
+            storeFile = file("albalab.jks")
+            storePassword = "albalab2026"
+            keyAlias = "albalab"
+            keyPassword = "albalab2026"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
